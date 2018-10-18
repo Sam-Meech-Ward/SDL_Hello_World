@@ -22,13 +22,30 @@ int renderWindow(width, height) {
   if(image == NULL) {
     return -1;
   }
+
+  SDL_Surface *optimizedImage= SDL_ConvertSurface(image, screenSurface->format, NULL);
+  if(optimizedImage == NULL) {
+    return -1;
+  }
   
-  SDL_BlitSurface(image, NULL, screenSurface, NULL);
+  // SDL_BlitSurface(image, NULL, screenSurface, NULL);
+  int imageWidth = width/2;
+  int imageHeight = (float)image->h*(float)width/(float)image->w/2;
+  SDL_Rect stretchRects[4] = {
+    { .x = 0, .y = height/2-imageHeight, .w = imageWidth, .h = imageHeight},
+    { .x = imageWidth, .y = height/2-imageHeight, .w = imageWidth, .h = imageHeight},
+    { .x = 0, .y = height/2, .w = imageWidth, .h = imageHeight},
+    { .x = imageWidth, .y = height/2, .w = imageWidth, .h = imageHeight}
+  };
+  for (int i = 0; i < 4; i++) {
+    SDL_BlitScaled(optimizedImage, NULL, screenSurface, &stretchRects[i]);
+  }
+
   if((err = SDL_UpdateWindowSurface(window)) < 0) {
     return err;
   }
 
-  SDL_Delay(40000);
+  SDL_Delay(4000);
 
   SDL_FreeSurface(image);
   SDL_DestroyWindow(window);
